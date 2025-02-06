@@ -171,6 +171,7 @@
 
 <script>
     let loading = false;
+    const currentPage = {{ current_page }};
     
     async function loadMoreArticles() {
         if (loading) return;
@@ -179,22 +180,30 @@
         const text = document.getElementById('load-more-text');
         const spinner = document.getElementById('load-more-spinner');
         
-        loading = true;
-        text.textContent = 'Loading...';
-        spinner.classList.remove('hidden');
-        
         try {
-            const nextPage = {{ current_page }} + 1;
-            const response = await fetch(`/?page=${nextPage}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}&partial=true`);
+            loading = true;
+            text.textContent = 'Loading...';
+            spinner.classList.remove('hidden');
+            
+            const nextPage = currentPage + 1;
+            const searchQuery = '{{ search }}';
+            const categoryQuery = '{{ category }}';
+            
+            let url = `/?page=${nextPage}`;
+            if (searchQuery) url += `&search=${searchQuery}`;
+            if (categoryQuery) url += `&category=${categoryQuery}`;
+            url += '&partial=true';
+            
+            const response = await fetch(url);
             const html = await response.text();
             
             const grid = document.querySelector('.grid');
             grid.insertAdjacentHTML('beforeend', html);
             
             // Update URL without refresh
-            const url = new URL(window.location);
-            url.searchParams.set('page', nextPage);
-            window.history.pushState({}, '', url);
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('page', nextPage);
+            window.history.pushState({}, '', newUrl);
             
         } catch (error) {
             console.error('Error loading more articles:', error);
