@@ -7,9 +7,29 @@
     {{ structured_data|safe }}
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .reading-progress {
+        height: 3px;
+        background-color: #dc2626;
+        width: 0%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        transition: width 0.1s ease;
+    }
+
+    .toc-link.active {
+        color: #dc2626;
+        font-weight: 600;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
+<!-- Reading Progress Bar -->
+<div id="reading-progress" class="reading-progress"></div>
+
 <!-- Breadcrumb - Made scrollable for mobile -->
 <nav class="mb-4 text-sm overflow-x-auto whitespace-nowrap pb-2">
     <ol class="flex items-center space-x-2">
@@ -141,11 +161,36 @@
             </div>
         </article>
 
-       
+        <!-- Improved Share Section -->
+        <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h3 class="font-heading text-xl font-bold mb-4">Share this article</h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="copyToClipboard(window.location.href)"
+                        class="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                    <i class="fas fa-link mr-2"></i>
+                    <span id="copy-text">Copy Link</span>
+                </button>
+                <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ article.title }}" 
+                   target="_blank"
+                   class="flex items-center px-4 py-2 bg-[#1DA1F2] text-white hover:opacity-90 rounded-lg transition-opacity">
+                    <i class="fab fa-twitter mr-2"></i>
+                    Tweet
+                </a>
+                <!-- ...other share buttons... -->
+            </div>
+        </div>
     </div>
 
     <!-- Sidebar - Made sticky on desktop -->
     <aside class="lg:col-span-1 space-y-4 sm:space-y-6 lg:sticky lg:top-24">
+        <!-- Table of Contents -->
+        <div class="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+            <h3 class="font-heading text-xl font-bold mb-4">Quick Navigation</h3>
+            <nav class="space-y-2" id="toc">
+                <!-- Generated dynamically -->
+            </nav>
+        </div>
+
         <!-- Publisher Info -->
         <div class="bg-white rounded-lg shadow-lg p-6">
             <h3 class="font-heading text-xl font-bold mb-4">About Publisher</h3>
@@ -208,4 +253,43 @@
         {% endif %}
     </aside>
 </div>
+
+<script>
+    // Reading Progress
+    window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        document.getElementById('reading-progress').style.width = scrolled + '%';
+    });
+
+    // Copy to Clipboard
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            const copyText = document.getElementById('copy-text');
+            copyText.textContent = 'Copied!';
+            setTimeout(() => {
+                copyText.textContent = 'Copy Link';
+            }, 2000);
+        });
+    }
+
+    // Generate Table of Contents
+    document.addEventListener('DOMContentLoaded', () => {
+        const toc = document.getElementById('toc');
+        const headings = document.querySelectorAll('article h2, article h3');
+        
+        headings.forEach((heading, index) => {
+            const id = `section-${index}`;
+            heading.id = id;
+            
+            const link = document.createElement('a');
+            link.href = `#${id}`;
+            link.classList.add('toc-link', 'block', 'text-gray-600', 'hover:text-brand-red', 'transition-colors');
+            link.textContent = heading.textContent;
+            
+            toc.appendChild(link);
+        });
+    });
+</script>
 {% endblock %}

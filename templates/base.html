@@ -69,6 +69,8 @@
                 menuIcon.classList.remove('fa-times');
                 menuIcon.classList.add('fa-bars');
             }
+
+            localStorage.setItem('sidebarOpen', sidebar.classList.contains('-translate-x-full') ? 'false' : 'true');
         }
     </script>
     <style>
@@ -82,10 +84,43 @@
         .page-enter-active {
             opacity: 1;
         }
+
+        /* Loading animation */
+        .loading-bar {
+            height: 3px;
+            background: linear-gradient(to right, #dc2626 0%, #ef4444 50%, #dc2626 100%);
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            animation: loading-bar-animation 1s ease-in-out infinite;
+            transform-origin: 0% 50%;
+        }
+
+        @keyframes loading-bar-animation {
+            0% { transform: scaleX(0); }
+            50% { transform: scaleX(1); }
+            100% { transform: scaleX(0); }
+        }
+
+        .scroll-top {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
     {% block head %}{% endblock %}
 </head>
 <body class="font-sans bg-gray-50">
+    <!-- Loading Bar -->
+    <div id="loading-bar" class="loading-bar hidden"></div>
+
     <!-- Sidebar Overlay - Updated to show on all screens -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
@@ -228,7 +263,12 @@
         </footer>
     </div>
 
-    
+    <!-- Scroll to Top Button -->
+    <button id="scroll-top" 
+            class="scroll-top fixed bottom-8 right-8 p-3 bg-brand-red text-white rounded-full shadow-lg hover:bg-red-700 transition-all duration-300"
+            onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <script>
         // Add scroll-based header shadow
@@ -238,6 +278,32 @@
                 header.classList.add('shadow-md');
             } else {
                 header.classList.remove('shadow-md');
+            }
+        });
+
+        // Show loading bar on navigation
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && !link.target && !e.ctrlKey && !e.shiftKey) {
+                document.getElementById('loading-bar').classList.remove('hidden');
+            }
+        });
+
+        // Scroll to top button
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.getElementById('scroll-top');
+            if (window.scrollY > 300) {
+                scrollTop.classList.add('visible');
+            } else {
+                scrollTop.classList.remove('visible');
+            }
+        });
+
+        // Restore sidebar state
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarOpen = localStorage.getItem('sidebarOpen') === 'true';
+            if (sidebarOpen) {
+                toggleSidebar();
             }
         });
     </script>

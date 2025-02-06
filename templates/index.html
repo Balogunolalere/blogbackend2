@@ -2,119 +2,207 @@
 
 {% block title %}Latest News - NewsPortal{% endblock %}
 
+{% block head %}
+<script>
+    // Lazy loading
+    document.addEventListener('DOMContentLoaded', () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    observer.unobserve(img);
+                }
+            });
+        });
+
+        document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
+    });
+</script>
+{% endblock %}
+
 {% block content %}
-<!-- Articles Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
-    {% for article in articles %}
-    <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <a href="/article/{{ article.url|replace('/', '_')|urlencode }}" class="block">
-            {% if article.image %}
-            <div class="relative overflow-hidden">
-                <img src="{{ article.image }}" 
-                     alt="{{ article.title }}"
-                     class="w-full h-48 object-cover transform hover:scale-105 transition-transform duration-500">
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-brand-red text-white
-                               transform hover:scale-105 transition-all duration-300">
-                        <i class="fas fa-{{ {
-                            'world': 'earth-americas',
-                            'nation': 'landmark-flag',
-                            'business': 'chart-pie',
-                            'technology': 'microchip',
-                            'entertainment': 'masks-theater',
-                            'sports': 'trophy',
-                            'science': 'flask-vial',
-                            'health': 'heart-pulse',
-                            'politics': 'scale-balanced',
-                            'education': 'graduation-cap',
-                            'food': 'utensils',
-                            'travel': 'compass'
-                        }[article.category|lower]|default('newspaper') }} fa-fw mr-1 animate-bounce-subtle"></i>
-                        {{ article.category }}
-                    </span>
-                </div>
-            </div>
-            {% endif %}
-            <div class="p-4 {% if not article.image %}pt-6{% endif %}">
-                <h2 class="font-heading font-bold text-xl mb-2 line-clamp-2 group-hover:text-brand-red transition-colors duration-300">
-                    {{ article.title }}
-                </h2>
-                <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ article.description }}</p>
-                <div class="flex justify-between items-center text-sm">
-                    <div class="flex items-center text-brand-red font-semibold group">
-                        <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center mr-2 
-                                  group-hover:bg-brand-red group-hover:text-white transition-all duration-300">
-                            <i class="fas fa-globe-americas"></i>
-                        </div>
-                        <span class="group-hover:translate-x-1 transition-transform duration-300">
-                            {{ article.publisher.title }}
+<div class="space-y-8">
+    <!-- Category Pills -->
+    <div class="flex overflow-x-auto pb-4 hide-scrollbar">
+        <div class="flex gap-2">
+            <a href="/" 
+               class="shrink-0 px-4 py-2 rounded-full {% if not category %}bg-brand-red text-white{% else %}bg-white text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                All News
+            </a>
+            {% for topic in categories %}
+            <a href="/?category={{ topic|lower }}"
+               class="shrink-0 px-4 py-2 rounded-full {% if category == topic|lower %}bg-brand-red text-white{% else %}bg-white text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                {{ topic }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Articles Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+        {% for article in articles %}
+        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <a href="/article/{{ article.url|replace('/', '_')|urlencode }}" 
+               class="block h-full flex flex-col">
+                {% if article.image %}
+                <div class="relative overflow-hidden aspect-video">
+                    <img data-src="{{ article.image }}" 
+                         alt="{{ article.title }}"
+                         class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-brand-red text-white
+                                   transform hover:scale-105 transition-all duration-300">
+                            <i class="fas fa-{{ {
+                                'world': 'earth-americas',
+                                'nation': 'landmark-flag',
+                                'business': 'chart-pie',
+                                'technology': 'microchip',
+                                'entertainment': 'masks-theater',
+                                'sports': 'trophy',
+                                'science': 'flask-vial',
+                                'health': 'heart-pulse',
+                                'politics': 'scale-balanced',
+                                'education': 'graduation-cap',
+                                'food': 'utensils',
+                                'travel': 'compass'
+                            }[article.category|lower]|default('newspaper') }} fa-fw mr-1 animate-bounce-subtle"></i>
+                            {{ article.category }}
                         </span>
                     </div>
-                    <time class="flex items-center text-gray-500 hover:text-brand-red transition-colors duration-300">
-                        <i class="far fa-clock mr-1 animate-pulse-subtle"></i>
-                        {{ article.published_date[:10] }}
-                    </time>
                 </div>
-            </div>
-        </a>
-    </article>
-    {% endfor %}
-</div>
-
-<!-- Updated Pagination -->
-<div class="mt-12 flex justify-center">
-    <nav class="inline-flex flex-wrap justify-center gap-2 px-2" aria-label="Pagination">
-        {% if current_page > 1 %}
-        <a href="{{ '/?page=' ~ (current_page - 1) ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
-           class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-            <span class="sr-only">Previous</span>
-            <i class="fas fa-chevron-left"></i>
-        </a>
-        {% endif %}
-
-        {% set start = [current_page - 2, 1]|max %}
-        {% set end = [start + 4, total_pages]|min %}
-        {% set start = [end - 4, 1]|max %}
-
-        {% if start > 1 %}
-        <a href="{{ '/?page=1' ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
-           class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-            1
-        </a>
-        {% if start > 2 %}
-        <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg">
-            ...
-        </span>
-        {% endif %}
-        {% endif %}
-
-        {% for p in range(start, end + 1) %}
-        <a href="{{ '/?page=' ~ p ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
-           class="relative inline-flex items-center px-4 py-2 text-sm font-medium {% if p == current_page %}bg-brand-red text-white border-brand-red{% else %}text-gray-700 bg-white border-gray-300 hover:bg-gray-50{% endif %} border rounded-lg"
-           {% if p == current_page %}aria-current="page"{% endif %}>
-            {{ p }}
-        </a>
+                {% endif %}
+                <div class="p-4 flex-grow flex flex-col">
+                    <h2 class="font-heading font-bold text-xl mb-2 line-clamp-2 flex-grow">
+                        {{ article.title }}
+                    </h2>
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                        {{ article.description }}
+                    </p>
+                    <div class="flex justify-between items-center text-sm">
+                        <div class="flex items-center text-brand-red font-semibold group">
+                            <div class="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center mr-2 
+                                      group-hover:bg-brand-red group-hover:text-white transition-all duration-300">
+                                <i class="fas fa-globe-americas"></i>
+                            </div>
+                            <span class="group-hover:translate-x-1 transition-transform duration-300">
+                                {{ article.publisher.title }}
+                            </span>
+                        </div>
+                        <time class="flex items-center text-gray-500 hover:text-brand-red transition-colors duration-300">
+                            <i class="far fa-clock mr-1 animate-pulse-subtle"></i>
+                            {{ article.published_date[:10] }}
+                        </time>
+                    </div>
+                </div>
+            </a>
+        </article>
         {% endfor %}
+    </div>
 
-        {% if end < total_pages %}
-        {% if end < total_pages - 1 %}
-        <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg">
-            ...
-        </span>
-        {% endif %}
-        <a href="{{ '/?page=' ~ total_pages ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
-           class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-            {{ total_pages }}
-        </a>
-        {% endif %}
+    <!-- Pagination (now with loading indicator) -->
+    <div class="mt-12 flex justify-center">
+        <div id="pagination-container">
+            <nav class="inline-flex flex-wrap justify-center gap-2 px-2" aria-label="Pagination">
+                {% if current_page > 1 %}
+                <a href="{{ '/?page=' ~ (current_page - 1) ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
+                   class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <span class="sr-only">Previous</span>
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
 
-        {% if current_page < total_pages %}
-        <a href="{{ '/?page=' ~ (current_page + 1) ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
-           class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-            <span class="sr-only">Next</span>
-            <i class="fas fa-chevron-right"></i>
-        </a>
-        {% endif %}
-    </nav>
+                {% set start = [current_page - 2, 1]|max %}
+                {% set end = [start + 4, total_pages]|min %}
+                {% set start = [end - 4, 1]|max %}
+
+                {% if start > 1 %}
+                <a href="{{ '/?page=1' ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
+                   class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    1
+                </a>
+                {% if start > 2 %}
+                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg">
+                    ...
+                </span>
+                {% endif %}
+                {% endif %}
+
+                {% for p in range(start, end + 1) %}
+                <a href="{{ '/?page=' ~ p ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
+                   class="relative inline-flex items-center px-4 py-2 text-sm font-medium {% if p == current_page %}bg-brand-red text-white border-brand-red{% else %}text-gray-700 bg-white border-gray-300 hover:bg-gray-50{% endif %} border rounded-lg"
+                   {% if p == current_page %}aria-current="page"{% endif %}>
+                    {{ p }}
+                </a>
+                {% endfor %}
+
+                {% if end < total_pages %}
+                {% if end < total_pages - 1 %}
+                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg">
+                    ...
+                </span>
+                {% endif %}
+                <a href="{{ '/?page=' ~ total_pages ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
+                   class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    {{ total_pages }}
+                </a>
+                {% endif %}
+
+                {% if current_page < total_pages %}
+                <a href="{{ '/?page=' ~ (current_page + 1) ~ (search|default('', true) and '&search=' ~ search) ~ (category|default('', true) and '&category=' ~ category) }}"
+                   class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <span class="sr-only">Next</span>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+            {% if current_page < total_pages %}
+            <div id="load-more" class="text-center mt-8">
+                <button onclick="loadMoreArticles()"
+                        class="px-6 py-3 bg-white text-gray-700 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <span id="load-more-text">Load More Articles</span>
+                    <i id="load-more-spinner" class="fas fa-spinner fa-spin hidden ml-2"></i>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
+
+<script>
+    let loading = false;
+    
+    async function loadMoreArticles() {
+        if (loading) return;
+        
+        const button = document.getElementById('load-more');
+        const text = document.getElementById('load-more-text');
+        const spinner = document.getElementById('load-more-spinner');
+        
+        loading = true;
+        text.textContent = 'Loading...';
+        spinner.classList.remove('hidden');
+        
+        try {
+            const nextPage = {{ current_page }} + 1;
+            const response = await fetch(`/?page=${nextPage}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}&partial=true`);
+            const html = await response.text();
+            
+            const grid = document.querySelector('.grid');
+            grid.insertAdjacentHTML('beforeend', html);
+            
+            // Update URL without refresh
+            const url = new URL(window.location);
+            url.searchParams.set('page', nextPage);
+            window.history.pushState({}, '', url);
+            
+        } catch (error) {
+            console.error('Error loading more articles:', error);
+        } finally {
+            loading = false;
+            text.textContent = 'Load More Articles';
+            spinner.classList.add('hidden');
+        }
+    }
+</script>
 {% endblock %}
