@@ -51,11 +51,24 @@
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
             const overlay = document.getElementById('sidebar-overlay');
+            const menuButton = document.getElementById('menu-button');
             
             sidebar.classList.toggle('-translate-x-full');
+            mainContent.classList.toggle('lg:pl-72');
+            mainContent.classList.toggle('lg:pl-0');
             overlay.classList.toggle('hidden');
-            overlay.classList.toggle('animate-fadeIn');
+            
+            // Toggle menu icon
+            const menuIcon = menuButton.querySelector('i');
+            if (menuIcon.classList.contains('fa-bars')) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-times');
+            } else {
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+            }
         }
     </script>
     <style>
@@ -73,11 +86,11 @@
     {% block head %}{% endblock %}
 </head>
 <body class="font-sans bg-gray-50">
-    <!-- Sidebar Overlay -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <!-- Sidebar Overlay - Updated to show on all screens -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar - Adjusted z-index and positioning -->
-    <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out z-50 overflow-hidden">
+    <!-- Sidebar - Updated positioning -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out z-50 mt-16">
         <div class="flex flex-col h-full pt-16">
             <!-- Categories List -->
             <div class="flex-grow overflow-y-auto p-4">
@@ -122,14 +135,15 @@
         </div>
     </aside>
 
-    <!-- Fixed Header - Adjusted for better mobile display -->
+    <!-- Fixed Header - Updated with persistent menu button -->
     <header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-40">
         <nav class="container mx-auto px-4">
             <!-- Top Bar -->
             <div class="h-16 flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <button onclick="toggleSidebar()" 
-                            class="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none">
+                    <button id="menu-button"
+                            onclick="toggleSidebar()" 
+                            class="p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none transition-colors">
                         <i class="fas fa-bars"></i>
                     </button>
                     <a href="/" class="text-xl sm:text-2xl font-heading font-bold text-brand-red flex items-center whitespace-nowrap">
@@ -184,13 +198,37 @@
         </nav>
     </header>
 
-    <!-- Main Content Wrapper - Adjusted padding -->
-    <div class="lg:pl-72 pt-24 md:pt-16">
+    <!-- Main Content Wrapper - Updated with ID and transition -->
+    <div id="main-content" class="lg:pl-0 pt-24 md:pt-16 transition-all duration-300 min-h-screen flex flex-col">
         <!-- Main Content -->
-        <main class="container mx-auto px-4 py-4 md:py-8">
+        <main class="container mx-auto px-4 py-4 md:py-8 flex-grow">
             {% block content %}{% endblock %}
         </main>
+
+        <!-- Minimal Footer -->
+        <footer class="mt-auto border-t">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+                    <div>
+                        © {{ date.year }} • {{ date.strftime('%B %d, %Y') }}
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="hover:text-brand-red transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="hover:text-brand-red transition-colors">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="hover:text-brand-red transition-colors">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
+
+    
 
     <script>
         // Add scroll-based header shadow
