@@ -89,48 +89,127 @@
     <!-- Sidebar Overlay - Updated to show on all screens -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar - Updated positioning -->
-    <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out z-50 mt-16">
-        <div class="flex flex-col h-full pt-16">
-            <!-- Categories List -->
-            <div class="flex-grow overflow-y-auto p-4">
-                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 animate-fadeIn">Categories</h3>
-                <nav class="space-y-2">
-                    {% for category in categories %}
-                    {% set icon_data = {
-                        'WORLD': ['fa-earth-americas', 'text-blue-500'],
-                        'NATION': ['fa-landmark-flag', 'text-red-500'],
-                        'BUSINESS': ['fa-chart-line', 'text-green-500'],
-                        'TECHNOLOGY': ['fa-microchip', 'text-purple-500'],
-                        'ENTERTAINMENT': ['fa-masks-theater', 'text-pink-500'],
-                        'SPORTS': ['fa-medal', 'text-orange-500'],
-                        'SCIENCE': ['fa-flask-vial', 'text-indigo-500'],
-                        'HEALTH': ['fa-heart-pulse', 'text-red-500'],
-                        'POLITICS': ['fa-scale-balanced', 'text-blue-600'],
-                        'CELEBRITIES': ['fa-star', 'text-yellow-500'],
-                        'ECONOMY': ['fa-money-bill-trend-up', 'text-emerald-500'],
-                        'FINANCE': ['fa-coins', 'text-yellow-600'],
-                        'EDUCATION': ['fa-user-graduate', 'text-blue-500'],
-                        'FOOD': ['fa-utensils', 'text-orange-500'],
-                        'TRAVEL': ['fa-compass', 'text-teal-500']
-                    }[category]|default(['fa-newspaper', 'text-gray-500']) %}
-                    <a href="/?category={{ category|lower }}" 
-                       class="flex items-center px-4 py-3 rounded-lg group {% if category|lower == current_category %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-all duration-200">
-                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-opacity-10 mr-3
+    <!-- Update sidebar content -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-80 bg-white shadow-lg transform -translate-x-full transition-all duration-300 ease-in-out z-50 mt-16">
+        <div class="flex flex-col h-full">
+            <!-- Category Groups -->
+            <div class="flex-grow overflow-y-auto">
+                <!-- News Categories -->
+                <div class="p-4 border-b">
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
+                        <i class="fas fa-newspaper text-brand-red mr-2"></i>
+                        News Categories
+                    </h3>
+                    <nav class="grid grid-cols-2 gap-2">
+                        {% set primary_categories = ['WORLD', 'NATION', 'POLITICS', 'BUSINESS'] %}
+                        {% for category in primary_categories %}
+                        {% set icon_style = {
+                            'WORLD': ['text-blue-500', 'bg-blue-100'],
+                            'NATION': ['text-red-500', 'bg-red-100'],
+                            'POLITICS': ['text-blue-600', 'bg-blue-100'],
+                            'BUSINESS': ['text-green-500', 'bg-green-100']
+                        }[category]|default(['text-gray-500', 'bg-gray-100']) %}
+                        <a href="/?category={{ category|lower }}" 
+                           class="flex items-center p-2 rounded-lg group {% if category|lower == current_category %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-all duration-200">
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-opacity-10 mr-2
+                                      {% if category|lower == current_category %}
+                                        bg-white text-white
+                                      {% else %}
+                                        {{ icon_style[0] }} {{ icon_style[1] }}
+                                      {% endif %}">
+                                <i class="fas fa-{{ {
+                                    'WORLD': 'earth-americas',
+                                    'NATION': 'landmark-flag',
+                                    'POLITICS': 'scale-balanced',
+                                    'BUSINESS': 'chart-line'
+                                }[category] }} text-lg"></i>
+                            </div>
+                            <span class="font-medium text-sm">{{ category }}</span>
+                            {% if category|lower == current_category %}
+                            <i class="fas fa-check ml-auto opacity-75 text-xs"></i>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </nav>
+                </div>
+
+                <!-- Technology & Science -->
+                <div class="p-4 border-b bg-gray-50">
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
+                        <i class="fas fa-microchip text-purple-500 mr-2"></i>
+                        Tech & Science
+                    </h3>
+                    <nav class="space-y-1">
+                        {% set tech_categories = ['TECHNOLOGY', 'SCIENCE'] %}
+                        {% for category in tech_categories %}
+                        <a href="/?category={{ category|lower }}" 
+                           class="flex items-center px-3 py-2 rounded-lg {% if category|lower == current_category %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-all duration-200">
+                            <i class="fas fa-{{ {'TECHNOLOGY': 'microchip', 'SCIENCE': 'flask-vial'}[category] }} w-5 mr-3"></i>
+                            <span class="font-medium text-sm">{{ category }}</span>
+                        </a>
+                        {% endfor %}
+                    </nav>
+                </div>
+
+                <!-- Entertainment & Lifestyle -->
+                <div class="p-4 border-b">
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
+                        <i class="fas fa-film text-pink-500 mr-2"></i>
+                        Entertainment & Lifestyle
+                    </h3>
+                    <nav class="space-y-1">
+                        {% for category in ['ENTERTAINMENT', 'CELEBRITIES', 'FOOD', 'TRAVEL'] %}
+                        <a href="/?category={{ category|lower }}" 
+                           class="flex items-center px-3 py-2 rounded-lg {% if category|lower == current_category %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-all duration-200 group">
+                            <i class="fas fa-{{ {
+                                'ENTERTAINMENT': 'film',
+                                'CELEBRITIES': 'star',
+                                'FOOD': 'utensils',
+                                'TRAVEL': 'compass'
+                            }[category] }} w-5 mr-3 group-hover:animate-bounce-subtle"></i>
+                            <span class="font-medium text-sm">{{ category }}</span>
+                        </a>
+                        {% endfor %}
+                    </nav>
+                </div>
+
+                <!-- Other Categories -->
+                <div class="p-4">
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
+                        <i class="fas fa-layer-group text-gray-400 mr-2"></i>
+                        More Topics
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for category in ['HEALTH', 'SPORTS', 'EDUCATION', 'FINANCE'] %}
+                        <a href="/?category={{ category|lower }}" 
+                           class="inline-flex items-center px-3 py-1.5 rounded-full text-sm
                                   {% if category|lower == current_category %}
-                                    bg-white text-white
+                                    bg-brand-red text-white
                                   {% else %}
-                                    {{ icon_data[1] }} bg-{{ icon_data[1].split('-')[1] }}-100
-                                  {% endif %}">
-                            <i class="fas {{ icon_data[0] }} text-lg"></i>
-                        </div>
-                        <span class="font-medium">{{ category }}</span>
-                        {% if category|lower == current_category %}
-                        <i class="fas fa-check ml-auto opacity-75 text-xs"></i>
-                        {% endif %}
-                    </a>
-                    {% endfor %}
-                </nav>
+                                    bg-gray-100 text-gray-600 hover:bg-gray-200
+                                  {% endif %} transition-colors duration-200">
+                            <i class="fas fa-{{ {
+                                'HEALTH': 'heart-pulse',
+                                'SPORTS': 'medal',
+                                'EDUCATION': 'graduation-cap',
+                                'FINANCE': 'coins'
+                            }[category] }} mr-1.5 text-xs"></i>
+                            {{ category }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t bg-gray-50">
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>{{ date.strftime('%B %d, %Y') }}</span>
+                    <button onclick="toggleSidebar()" 
+                            class="px-3 py-1 rounded-lg hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </aside>
