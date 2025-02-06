@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -176,6 +177,7 @@ async def home_page(
                 "category": category,
                 "current_category": category,  # Add current_category to context
                 "categories": TOPICS,
+                "now": datetime.now(),  # Add current date
             }
         )
     except Exception as e:
@@ -239,7 +241,8 @@ async def article_details(request: Request, url: str):
                 "related": related.data,
                 "structured_data": json.dumps(structured_data, ensure_ascii=False),
                 "categories": TOPICS,  # Add categories to context
-                "current_category": article["category"].upper()  # Add current category
+                "current_category": article["category"].upper(),  # Add current category
+                "now": datetime.now(),  # Add current date
             }
         )
     except Exception as e:
