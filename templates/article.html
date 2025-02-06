@@ -60,27 +60,41 @@
             
             <div class="p-4 sm:p-6">
                 <!-- Article Header -->
-                <header class="mb-6 sm:mb-8">
-                    <h1 class="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{{ article.title }}</h1>
+                <header class="mb-8">
+                    <h1 class="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">{{ article.title }}</h1>
                     
-                    <!-- Meta Information - Made scrollable on mobile -->
-                    <div class="flex flex-nowrap overflow-x-auto pb-2 sm:flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                    <!-- Updated Meta Information -->
+                    <div class="flex flex-wrap items-center gap-3 text-sm mb-6">
                         <a href="{{ article.publisher.href }}" 
-                           class="text-brand-red font-semibold hover:underline flex items-center">
-                            <i class="fas fa-globe mr-1"></i>
-                            {{ article.publisher.title }}
+                           class="inline-flex items-center px-3 py-1.5 bg-red-50 text-brand-red rounded-full hover:bg-red-100 transition-colors group">
+                            <i class="fas fa-globe-americas mr-2 group-hover:animate-bounce-subtle"></i>
+                            <span class="font-medium">{{ article.publisher.title }}</span>
                         </a>
-                        <time class="flex items-center">
-                            <i class="far fa-calendar-alt mr-1"></i>
-                            {{ article.published_date[:10] }}
-                        </time>
-                        <span class="capitalize flex items-center">
-                            <i class="fas fa-tag mr-1"></i>
-                            {{ article.category }}
-                        </span>
+
+                        <div class="flex items-center px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full">
+                            <i class="far fa-calendar-alt mr-2 text-gray-400"></i>
+                            <time>{{ article.published_date[:10] }}</time>
+                        </div>
+
+                        <a href="/?category={{ article.category|lower }}" 
+                           class="inline-flex items-center px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-{{ {
+                                'world': 'globe-americas',
+                                'nation': 'flag',
+                                'business': 'chart-line',
+                                'technology': 'microchip',
+                                'entertainment': 'film',
+                                'sports': 'medal',
+                                'science': 'flask',
+                                'health': 'heart-pulse',
+                                'politics': 'landmark',
+                                'education': 'graduation-cap'
+                            }[article.category|lower]|default('newspaper') }} mr-2 text-gray-400"></i>
+                            <span class="capitalize">{{ article.category }}</span>
+                        </a>
                     </div>
 
-                    <!-- Share Buttons - Adjusted spacing -->
+                    <!-- Share Buttons -->
                     <div class="flex items-center gap-2 sm:gap-4 border-t border-b border-gray-200 py-4">
                         <span class="text-sm font-semibold flex items-center">
                             <i class="fas fa-share-alt mr-2"></i> Share this:
