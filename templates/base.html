@@ -20,24 +20,14 @@
                         'heading': ['Playfair Display', 'serif'],
                         'sans': ['Source Sans Pro', 'sans-serif'],
                     },
+                    animation: {
+                        'fade': 'fadeIn 0.2s ease-out',
+                    },
                     keyframes: {
                         fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        },
-                        'bounce-subtle': {
-                            '0%, 100%': { transform: 'translateY(-1px)' },
-                            '50%': { transform: 'translateY(1px)' }
-                        },
-                        'pulse-subtle': {
-                            '0%, 100%': { opacity: '1' },
-                            '50%': { opacity: '.7' }
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
                         }
-                    },
-                    animation: {
-                        fadeIn: 'fadeIn 0.5s ease-out',
-                        'bounce-subtle': 'bounce-subtle 2s infinite',
-                        'pulse-subtle': 'pulse-subtle 2s infinite'
                     }
                 }
             }
@@ -49,257 +39,230 @@
         }
     </script>
     <script>
+        // Remove the old toggleSidebar function and replace with this improved version
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
             const overlay = document.getElementById('sidebar-overlay');
-            const menuButton = document.getElementById('menu-button');
             
-            sidebar.classList.toggle('-translate-x-full');
-            mainContent.classList.toggle('lg:pl-72');
-            mainContent.classList.toggle('lg:pl-0');
-            overlay.classList.toggle('hidden');
-            
-            // Toggle menu icon
-            const menuIcon = menuButton.querySelector('i');
-            if (menuIcon.classList.contains('fa-bars')) {
-                menuIcon.classList.remove('fa-bars');
-                menuIcon.classList.add('fa-times');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Opening sidebar
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                // Delay the opacity transition
+                setTimeout(() => overlay.classList.add('opacity-100'), 0);
             } else {
-                menuIcon.classList.remove('fa-times');
-                menuIcon.classList.add('fa-bars');
+                // Closing sidebar
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.remove('opacity-100');
+                // Wait for fade out before hiding
+                setTimeout(() => overlay.classList.add('hidden'), 300);
             }
         }
+
+        // Close sidebar on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                if (!sidebar.classList.contains('-translate-x-full')) {
+                    toggleSidebar();
+                }
+            }
+        });
+
+        // Close sidebar when clicking overlay
+        document.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.getElementById('sidebar-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', toggleSidebar);
+            }
+        });
     </script>
     <style>
-        /* Smooth page transitions */
+        /* Refined Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+        
+        /* Smooth transitions */
         .page-transition {
-            transition: opacity 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out;
         }
-        .page-enter {
-            opacity: 0;
+        .hover-lift {
+            transition: transform 0.2s ease-out;
         }
-        .page-enter-active {
-            opacity: 1;
+        .hover-lift:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-item {
+            @apply flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors;
+        }
+        .nav-item.active {
+            @apply bg-brand-red text-white;
+        }
+        .nav-icon {
+            @apply w-5 h-5 mr-3;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Better transitions */
+        .sidebar-item {
+            @apply flex items-center px-6 py-3 rounded-lg transition-all duration-200;
+        }
+        
+        .sidebar-item:hover:not(.active) {
+            @apply bg-gray-50 transform translate-x-1;
+        }
+        
+        .sidebar-item.active {
+            @apply bg-brand-red text-white transform translate-x-1;
+        }
+        
+        .sidebar-icon {
+            @apply w-9 h-9 flex items-center justify-center rounded-lg mr-3 transition-all duration-200;
         }
     </style>
     {% block head %}{% endblock %}
 </head>
 <body class="font-sans bg-gray-50">
-    <!-- Sidebar Overlay - Updated to show on all screens -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleSidebar()"></div>
+    <!-- Ensure overlay is below sidebar but above content -->
+    <div id="sidebar-overlay" 
+         class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 hidden opacity-0 transition-opacity duration-300"
+         onclick="toggleSidebar()"></div>
 
-    <!-- Update sidebar content -->
-    <aside id="sidebar" class="fixed top-0 left-0 h-full w-80 bg-white shadow-lg transform -translate-x-full transition-all duration-300 ease-in-out z-50 mt-16">
+    <!-- Adjusted sidebar with higher z-index and smoother transition -->
+    <aside id="sidebar" 
+           class="fixed top-0 left-0 h-full w-[280px] bg-white shadow-xl transform -translate-x-full transition-all duration-300 ease-in-out z-40">
         <div class="flex flex-col h-full">
-            <!-- Category Groups -->
-            <div class="flex-grow overflow-y-auto">
-                <!-- News Categories -->
-                <div class="p-4 border-b">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fas fa-newspaper text-brand-red mr-2"></i>
-                        News Categories
-                    </h3>
-                    <nav class="grid grid-cols-2 gap-2">
-                        {% set primary_categories = ['WORLD', 'NATION', 'POLITICS', 'BUSINESS'] %}
-                        {% for category in primary_categories %}
-                        {% set icon_style = {
-                            'WORLD': ['text-blue-500', 'bg-blue-100'],
-                            'NATION': ['text-red-500', 'bg-red-100'],
-                            'POLITICS': ['text-blue-600', 'bg-blue-100'],
-                            'BUSINESS': ['text-green-500', 'bg-green-100']
-                        }[category]|default(['text-gray-500', 'bg-gray-100']) %}
-                        <a href="/?category={{ category|lower }}" 
-                           class="flex items-center p-2 rounded-lg group {% if category|lower == current_category %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-all duration-200">
-                            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-opacity-10 mr-2
-                                      {% if category|lower == current_category %}
-                                        bg-white text-white
-                                      {% else %}
-                                        {{ icon_style[0] }} {{ icon_style[1] }}
-                                      {% endif %}">
-                                <i class="fas fa-{{ {
-                                    'WORLD': 'earth-americas',
-                                    'NATION': 'landmark-flag',
-                                    'POLITICS': 'scale-balanced',
-                                    'BUSINESS': 'chart-line'
-                                }[category] }} text-lg"></i>
-                            </div>
-                            <span class="font-medium text-sm">{{ category }}</span>
-                            {% if category|lower == current_category %}
-                            <i class="fas fa-check ml-auto opacity-75 text-xs"></i>
-                            {% endif %}
-                        </a>
-                        {% endfor %}
-                    </nav>
-                </div>
-
-                <!-- Technology & Science -->
-                <div class="p-4 border-b bg-gray-50">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fas fa-microchip text-purple-500 mr-2"></i>
-                        Tech & Science
-                    </h3>
-                    <nav class="space-y-1">
-                        {% set tech_categories = ['TECHNOLOGY', 'SCIENCE'] %}
-                        {% for category in tech_categories %}
-                        <a href="/?category={{ category|lower }}" 
-                           class="flex items-center px-3 py-2 rounded-lg {% if category|lower == current_category %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-all duration-200">
-                            <i class="fas fa-{{ {'TECHNOLOGY': 'microchip', 'SCIENCE': 'flask-vial'}[category] }} w-5 mr-3"></i>
-                            <span class="font-medium text-sm">{{ category }}</span>
-                        </a>
-                        {% endfor %}
-                    </nav>
-                </div>
-
-                <!-- Entertainment & Lifestyle -->
-                <div class="p-4 border-b">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fas fa-film text-pink-500 mr-2"></i>
-                        Entertainment & Lifestyle
-                    </h3>
-                    <nav class="space-y-1">
-                        {% for category in ['ENTERTAINMENT', 'CELEBRITIES', 'FOOD', 'TRAVEL'] %}
-                        <a href="/?category={{ category|lower }}" 
-                           class="flex items-center px-3 py-2 rounded-lg {% if category|lower == current_category %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-all duration-200 group">
-                            <i class="fas fa-{{ {
-                                'ENTERTAINMENT': 'film',
-                                'CELEBRITIES': 'star',
-                                'FOOD': 'utensils',
-                                'TRAVEL': 'compass'
-                            }[category] }} w-5 mr-3 group-hover:animate-bounce-subtle"></i>
-                            <span class="font-medium text-sm">{{ category }}</span>
-                        </a>
-                        {% endfor %}
-                    </nav>
-                </div>
-
-                <!-- Other Categories -->
-                <div class="p-4">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fas fa-layer-group text-gray-400 mr-2"></i>
-                        More Topics
-                    </h3>
-                    <div class="flex flex-wrap gap-2">
-                        {% for category in ['HEALTH', 'SPORTS', 'EDUCATION', 'FINANCE'] %}
-                        <a href="/?category={{ category|lower }}" 
-                           class="inline-flex items-center px-3 py-1.5 rounded-full text-sm
-                                  {% if category|lower == current_category %}
-                                    bg-brand-red text-white
-                                  {% else %}
-                                    bg-gray-100 text-gray-600 hover:bg-gray-200
-                                  {% endif %} transition-colors duration-200">
-                            <i class="fas fa-{{ {
-                                'HEALTH': 'heart-pulse',
-                                'SPORTS': 'medal',
-                                'EDUCATION': 'graduation-cap',
-                                'FINANCE': 'coins'
-                            }[category] }} mr-1.5 text-xs"></i>
-                            {{ category }}
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
+            <!-- Sidebar Header with fixed close button -->
+            <div class="h-16 flex items-center justify-between px-6 border-b">
+                <span class="font-heading font-bold text-xl">Categories</span>
+                <button onclick="toggleSidebar()" 
+                        class="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
-            <!-- Sidebar Footer -->
-            <div class="p-4 border-t bg-gray-50">
-                <div class="flex items-center justify-between text-sm text-gray-500">
-                    <span>{{ date.strftime('%B %d, %Y') }}</span>
-                    <button onclick="toggleSidebar()" 
-                            class="px-3 py-1 rounded-lg hover:bg-gray-200 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
+            <!-- Navigation -->
+            <nav class="flex-1 px-3 py-4 overflow-y-auto">
+                <!-- Main Categories -->
+                <div class="mb-6">
+                    
+                    {% for cat, icon in [
+                        ('World', 'globe'),
+                        ('Business', 'briefcase'),
+                        ('Technology', 'microchip'),
+                        ('Politics', 'landmark'),
+                        ('Entertainment', 'film'),
+                        ('Sports', 'trophy')
+                    ] %}
+                    <a href="/?category={{ cat|lower }}" 
+                       class="flex items-center px-3 py-2 rounded-lg mb-1 {% if category == cat|lower %}bg-brand-red text-white{% else %}text-gray-600 hover:bg-gray-50{% endif %} transition-colors">
+                        <i class="fas fa-{{ icon }} w-5 h-5 mr-3"></i>
+                        <span>{{ cat }}</span>
+                    </a>
+                    {% endfor %}
                 </div>
+
+                <!-- Quick Filters -->
+                <div class="px-3 mb-2">
+                    <h3 class="text-xs text-gray-400 uppercase font-medium">Quick Filters</h3>
+                </div>
+                <a href="/?sort=latest" class="flex items-center px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg mb-1">
+                    <i class="fas fa-clock w-5 h-5 mr-3"></i>
+                    <span>Latest News</span>
+                </a>
+                <a href="/?sort=trending" class="flex items-center px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                    <i class="fas fa-fire w-5 h-5 mr-3"></i>
+                    <span>Trending</span>
+                </a>
+            </nav>
+
+            <!-- Simple Footer -->
+            <div class="p-4 border-t">
+                <span class="text-sm text-gray-500">{{ date.strftime('%B %d, %Y') }}</span>
             </div>
         </div>
     </aside>
 
-    <!-- Fixed Header - Updated with persistent menu button -->
-    <header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-40">
-        <nav class="container mx-auto px-4">
-            <!-- Top Bar -->
-            <div class="h-16 flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <button id="menu-button"
-                            onclick="toggleSidebar()" 
-                            class="p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none transition-colors">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <a href="/" class="text-xl sm:text-2xl font-heading font-bold text-brand-red flex items-center whitespace-nowrap">
-                        <i class="fas fa-newspaper mr-2"></i>
-                        NewsPortal
-                    </a>
-                </div>
+    <!-- Header with lower z-index than sidebar -->
+    <header class="fixed top-0 left-0 right-0 bg-white border-b z-20">
+        <div class="max-w-6xl mx-auto">
+            <div class="h-16 flex items-center px-4">
+                <button onclick="toggleSidebar()" 
+                        class="mr-4 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <a href="/" class="mr-8 text-xl font-heading font-bold text-brand-red">NewsPortal</a>
                 
                 <!-- Desktop Search -->
-                <form action="/" method="GET" class="hidden md:flex flex-grow max-w-2xl mx-4">
-                    <div class="flex w-full gap-2">
-                        <div class="flex-grow relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </div>
-                            <input type="text" 
-                                   name="search" 
-                                   value="{{ search }}" 
-                                   placeholder="Search news..."
-                                   class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red">
-                        </div>
-                        <button type="submit" 
-                                class="px-6 py-2 bg-brand-red text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center whitespace-nowrap">
-                            <i class="fas fa-search mr-2"></i>
-                            Search
-                        </button>
+                <form action="/" method="GET" class="hidden md:block flex-1 max-w-xl">
+                    <div class="relative">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ search }}" 
+                               placeholder="Search news..."
+                               class="w-full pl-10 pr-4 h-10 bg-gray-50 border border-gray-200 rounded-lg">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </form>
             </div>
 
             <!-- Mobile Search -->
-            <div class="md:hidden border-t py-3">
+            <div class="md:hidden px-4 pb-3">
                 <form action="/" method="GET">
-                    <div class="flex gap-2">
-                        <div class="flex-grow relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </div>
-                            <input type="text" 
-                                   name="search" 
-                                   value="{{ search }}" 
-                                   placeholder="Search news..."
-                                   class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red">
-                        </div>
-                        <button type="submit" 
-                                class="px-4 py-2 bg-brand-red text-white rounded-lg hover:bg-red-700 transition-colors">
-                            <i class="fas fa-search"></i>
-                        </button>
+                    <div class="relative">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ search }}" 
+                               placeholder="Search news..."
+                               class="w-full pl-10 pr-4 h-10 bg-gray-50 border border-gray-200 rounded-lg">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </form>
             </div>
-        </nav>
+        </div>
     </header>
 
-    <!-- Main Content Wrapper - Updated with ID and transition -->
+    <!-- Main Content with Smooth Transitions -->
     <div id="main-content" class="lg:pl-0 pt-24 md:pt-16 transition-all duration-300 min-h-screen flex flex-col">
         <!-- Main Content -->
-        <main class="container mx-auto px-4 py-4 md:py-8 flex-grow">
+        <main class="container mx-auto px-4 py-4 md:py-8 flex-grow animate-fadeIn">
             {% block content %}{% endblock %}
         </main>
 
-        <!-- Minimal Footer -->
-        <footer class="mt-auto border-t">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-                    <div>
-                        © {{ date.year }} • {{ date.strftime('%B %d, %Y') }}
+        <!-- Enhanced Footer -->
+        <footer class="mt-auto border-t bg-white/50 backdrop-blur-sm">
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-newspaper text-brand-red mr-2"></i>
+                        © {{ date.year }} NewsPortal • {{ date.strftime('%B %d, %Y') }}
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <a href="#" class="hover:text-brand-red transition-colors">
-                            <i class="fab fa-twitter"></i>
+                    <div class="flex items-center space-x-6">
+                        <a href="#" class="hover:text-brand-red transition-colors hover-lift">
+                            <i class="fab fa-twitter fa-lg"></i>
                         </a>
-                        <a href="#" class="hover:text-brand-red transition-colors">
-                            <i class="fab fa-github"></i>
+                        <a href="#" class="hover:text-brand-red transition-colors hover-lift">
+                            <i class="fab fa-github fa-lg"></i>
                         </a>
-                        <a href="#" class="hover:text-brand-red transition-colors">
-                            <i class="fab fa-linkedin"></i>
+                        <a href="#" class="hover:text-brand-red transition-colors hover-lift">
+                            <i class="fab fa-linkedin fa-lg"></i>
                         </a>
                     </div>
                 </div>
@@ -307,16 +270,16 @@
         </footer>
     </div>
 
-    
-
     <script>
-        // Add scroll-based header shadow
+        // Enhanced scroll-based header
         window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
             if (window.scrollY > 0) {
-                header.classList.add('shadow-md');
+                header.classList.add('shadow-soft');
+                header.classList.add('bg-white/95');
             } else {
-                header.classList.remove('shadow-md');
+                header.classList.remove('shadow-soft');
+                header.classList.remove('bg-white/95');
             }
         });
     </script>

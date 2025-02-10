@@ -7,205 +7,223 @@
     {{ structured_data|safe }}
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .prose p {
+        margin-bottom: 1.5em;
+        line-height: 1.75;
+    }
+    .shine-effect {
+        position: relative;
+        overflow: hidden;
+    }
+    .shine-effect::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            45deg,
+            transparent 45%,
+            rgba(255, 255, 255, 0.1) 47%,
+            rgba(255, 255, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0.1) 53%,
+            transparent 55%
+        );
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+    }
+    @keyframes shine {
+        0% { transform: translateX(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) rotate(45deg); }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<!-- Breadcrumb - Made scrollable for mobile -->
-<nav class="mb-4 text-sm overflow-x-auto whitespace-nowrap pb-2">
-    <ol class="flex items-center space-x-2">
-        <li><a href="/" class="text-brand-red hover:underline flex items-center">
-            <i class="fas fa-home mr-1"></i> Home
-        </a></li>
-        <li><i class="fas fa-chevron-right text-gray-500"></i></li>
-        <li><a href="/?category={{ article.category }}" class="text-brand-red hover:underline capitalize flex items-center">
-            <i class="fas fa-folder mr-1"></i> {{ article.category }}
-        </a></li>
-        <li><i class="fas fa-chevron-right text-gray-500"></i></li>
-        <li class="text-gray-500 truncate flex items-center">
-            <i class="fas fa-newspaper mr-1"></i> {{ article.title[:30] }}...
-        </li>
-    </ol>
-</nav>
+<!-- Hero Section -->
+<div class="relative -mt-8 mb-8 bg-gradient-to-br from-brand-dark to-brand-red text-white overflow-hidden">
+    <div class="container mx-auto px-4 py-12 lg:py-16">
+        <!-- Breadcrumb -->
+        <nav class="mb-6 text-sm opacity-90">
+            <ol class="flex items-center space-x-2">
+                <li><a href="/" class="hover:text-white/80 transition-colors flex items-center">
+                    <i class="fas fa-home mr-1"></i> Home
+                </a></li>
+                <li><i class="fas fa-chevron-right text-white/60 text-xs"></i></li>
+                <li><a href="/?category={{ article.category }}" class="hover:text-white/80 transition-colors capitalize flex items-center">
+                    <i class="fas fa-folder mr-1"></i> {{ article.category }}
+                </a></li>
+            </ol>
+        </nav>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-    <!-- Main Article Column -->
-    <div class="lg:col-span-2">
-        <article class="bg-white rounded-lg shadow-lg overflow-hidden">
-            {% if article.image %}
-            <div class="relative">
-                <img src="{{ article.image }}" 
-                     alt="{{ article.title }}"
-                     class="w-full h-48 sm:h-64 lg:h-96 object-cover">
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                    <div class="flex flex-wrap gap-2">
-                        <span class="inline-flex items-center px-3 py-1 bg-brand-red text-white text-sm rounded-full">
-                            <i class="fas fa-{{ {
-                                'world': 'globe-americas',
-                                'nation': 'flag',
-                                'business': 'chart-line',
-                                'technology': 'microchip',
-                                'entertainment': 'film',
-                                'sports': 'medal',
-                                'science': 'flask',
-                                'health': 'heart-pulse',
-                                'politics': 'landmark',
-                                'education': 'graduation-cap'
-                            }[article.category|lower]|default('newspaper') }} mr-2"></i>
-                            {{ article.category }}
-                        </span>
+        <h1 class="font-heading text-3xl lg:text-4xl xl:text-5xl font-bold mb-6 leading-tight">{{ article.title }}</h1>
+        
+        <!-- Meta Information -->
+        <div class="flex flex-wrap items-center gap-4 text-sm mb-6">
+            <a href="{{ article.publisher.href }}" 
+               target="_blank"
+               class="inline-flex items-center px-4 py-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors backdrop-blur-sm group">
+                <i class="fas fa-globe-americas mr-2 group-hover:animate-bounce-subtle"></i>
+                <span class="font-medium">{{ article.publisher.title }}</span>
+            </a>
+
+            <div class="flex items-center px-4 py-2 bg-black/10 rounded-full backdrop-blur-sm">
+                <i class="far fa-calendar-alt mr-2 opacity-75"></i>
+                <time>{{ article.published_date[:10] }}</time>
+            </div>
+
+            <div class="flex items-center px-4 py-2 bg-black/10 rounded-full backdrop-blur-sm">
+                <i class="fas fa-{{ {
+                    'world': 'earth-americas',
+                    'nation': 'flag',
+                    'business': 'chart-line',
+                    'technology': 'microchip',
+                    'entertainment': 'film',
+                    'sports': 'trophy',
+                    'science': 'flask',
+                    'health': 'heart-pulse'
+                }[article.category|lower]|default('newspaper') }} mr-2 opacity-75"></i>
+                <span class="capitalize">{{ article.category }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Article Column -->
+        <div class="lg:col-span-2">
+            <article class="bg-white rounded-xl shadow-soft overflow-hidden">
+                {% if article.image %}
+                <div class="relative">
+                    <img src="{{ article.image }}" 
+                         alt="{{ article.title }}"
+                         class="w-full h-64 lg:h-[400px] object-cover">
+                </div>
+                {% endif %}
+                
+                <div class="p-6 lg:p-8">
+                    <!-- Article Content -->
+                    <div class="prose max-w-none mb-8">
+                        <p class="text-lg leading-relaxed text-gray-600">{{ article.description }}</p>
+                        <blockquote class="border-l-4 border-brand-red p-4 my-6 bg-rose-50">
+                            <p class="italic text-gray-700">"{{ article.title }}"</p>
+                            <footer class="text-sm text-gray-500 mt-2">- {{ article.publisher.title }}</footer>
+                        </blockquote>
+                        
+                        <!-- Read More Button -->
+                        <a href="{{ article.url }}" 
+                           target="_blank"
+                           rel="noopener noreferrer" 
+                           class="shine-effect inline-flex items-center px-6 py-3 bg-brand-red text-white rounded-lg hover:bg-rose-700 transition-all shadow-sm group">
+                            Read Full Article
+                            <svg class="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </a>
                     </div>
+
+                    <!-- Share Section -->
+                    <div class="border-t border-gray-100 pt-6">
+                        <h3 class="font-medium text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-share-alt mr-2 text-brand-red"></i>
+                            Share this article
+                        </h3>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ article.title }}" 
+                               target="_blank"
+                               class="flex items-center px-4 py-2 bg-[#1DA1F2] text-white rounded-lg hover:opacity-90 transition-opacity">
+                                <i class="fab fa-twitter mr-2"></i>
+                                Twitter
+                            </a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" 
+                               target="_blank"
+                               class="flex items-center px-4 py-2 bg-[#4267B2] text-white rounded-lg hover:opacity-90 transition-opacity">
+                                <i class="fab fa-facebook-f mr-2"></i>
+                                Facebook
+                            </a>
+                            <a href="https://www.linkedin.com/shareArticle?url={{ request.url }}&title={{ article.title }}" 
+                               target="_blank"
+                               class="flex items-center px-4 py-2 bg-[#0077B5] text-white rounded-lg hover:opacity-90 transition-opacity">
+                                <i class="fab fa-linkedin-in mr-2"></i>
+                                LinkedIn
+                            </a>
+                            <button onclick="navigator.clipboard.writeText(window.location.href)"
+                                    class="flex items-center px-4 py-2 bg-gray-800 text-white rounded-lg hover:opacity-90 transition-opacity group">
+                                <i class="fas fa-link mr-2 group-hover:rotate-12 transition-transform"></i>
+                                Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Enhanced Sidebar -->
+        <aside class="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+            <!-- Publisher Card -->
+            <div class="bg-white rounded-xl shadow-soft p-6">
+                <h3 class="font-heading text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-newspaper text-brand-red mr-2"></i>
+                    About Publisher
+                </h3>
+                <a href="{{ article.publisher.href }}" 
+                   target="_blank"
+                   class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+                    <div class="w-12 h-12 bg-brand-red/10 text-brand-red rounded-full flex items-center justify-center">
+                        <i class="fas fa-globe-americas group-hover:animate-bounce-subtle"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-900">{{ article.publisher.title }}</h4>
+                        <p class="text-sm text-gray-500">Visit Publisher Site</p>
+                    </div>
+                    <i class="fas fa-external-link-alt ml-auto text-gray-400 group-hover:text-brand-red transition-colors"></i>
+                </a>
+            </div>
+
+            <!-- Related Articles -->
+            {% if related %}
+            <div class="bg-white rounded-xl shadow-soft p-6">
+                <h3 class="font-heading text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-newspaper text-brand-red mr-2"></i>
+                    Related Articles
+                </h3>
+                <div class="space-y-6">
+                    {% for related_article in related %}
+                    <article class="group">
+                        <a href="/article/{{ related_article.url|replace('/', '_')|urlencode }}" 
+                           class="flex gap-4">
+                            {% if related_article.image %}
+                            <div class="relative w-24 h-24 flex-shrink-0">
+                                <img src="{{ related_article.image }}" 
+                                     alt="{{ related_article.title }}"
+                                     class="w-full h-full object-cover rounded-lg">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg group-hover:from-black/0 transition-colors"></div>
+                            </div>
+                            {% endif %}
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-gray-900 group-hover:text-brand-red transition-colors line-clamp-2 mb-2">
+                                    {{ related_article.title }}
+                                </h4>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <time class="flex items-center">
+                                        <i class="far fa-clock mr-1.5"></i>
+                                        {{ related_article.published_date[:10] }}
+                                    </time>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+                    {% if not loop.last %}
+                    <div class="border-t border-gray-100"></div>
+                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
             {% endif %}
-            
-            <div class="p-4 sm:p-6">
-                <!-- Article Header -->
-                <header class="mb-8">
-                    <h1 class="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">{{ article.title }}</h1>
-                    
-                    <!-- Updated Meta Information -->
-                    <div class="flex flex-wrap items-center gap-3 text-sm mb-6">
-                        <a href="{{ article.publisher.href }}" 
-                           class="inline-flex items-center px-3 py-1.5 bg-red-50 text-brand-red rounded-full hover:bg-red-100 transition-colors group">
-                            <i class="fas fa-globe-americas mr-2 group-hover:animate-bounce-subtle"></i>
-                            <span class="font-medium">{{ article.publisher.title }}</span>
-                        </a>
-
-                        <div class="flex items-center px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full">
-                            <i class="far fa-calendar-alt mr-2 text-gray-400"></i>
-                            <time>{{ article.published_date[:10] }}</time>
-                        </div>
-
-                        <a href="/?category={{ article.category|lower }}" 
-                           class="inline-flex items-center px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
-                            <i class="fas fa-{{ {
-                                'world': 'globe-americas',
-                                'nation': 'flag',
-                                'business': 'chart-line',
-                                'technology': 'microchip',
-                                'entertainment': 'film',
-                                'sports': 'medal',
-                                'science': 'flask',
-                                'health': 'heart-pulse',
-                                'politics': 'landmark',
-                                'education': 'graduation-cap'
-                            }[article.category|lower]|default('newspaper') }} mr-2 text-gray-400"></i>
-                            <span class="capitalize">{{ article.category }}</span>
-                        </a>
-                    </div>
-
-                    <!-- Share Buttons -->
-                    <div class="flex items-center gap-2 sm:gap-4 border-t border-b border-gray-200 py-4">
-                        <span class="text-sm font-semibold flex items-center">
-                            <i class="fas fa-share-alt mr-2"></i> Share this:
-                        </span>
-                        <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ article.title }}" 
-                           target="_blank"
-                           class="w-8 h-8 flex items-center justify-center bg-[#1DA1F2] text-white rounded-full hover:opacity-90">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" 
-                           target="_blank"
-                           class="w-8 h-8 flex items-center justify-center bg-[#4267B2] text-white rounded-full hover:opacity-90">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="https://www.linkedin.com/shareArticle?url={{ request.url }}&title={{ article.title }}" 
-                           target="_blank"
-                           class="w-8 h-8 flex items-center justify-center bg-[#0077B5] text-white rounded-full hover:opacity-90">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <button onclick="navigator.clipboard.writeText(window.location.href)"
-                                class="w-8 h-8 flex items-center justify-center bg-gray-800 text-white rounded-full hover:opacity-90">
-                            <i class="fas fa-link"></i>
-                        </button>
-                    </div>
-                </header>
-
-                <!-- Article Content -->
-                <div class="prose max-w-none mb-8">
-                    <p class="text-lg leading-relaxed text-gray-700">{{ article.description }}</p>
-                    <div class="bg-gray-50 border-l-4 border-brand-red p-4 my-6">
-                        <p class="italic text-gray-600">"{{ article.title }}"</p>
-                        <p class="text-sm text-gray-500 mt-2">- {{ article.publisher.title }}</p>
-                    </div>
-                    <a href="{{ article.url }}" 
-                       target="_blank"
-                       rel="noopener noreferrer" 
-                       class="inline-flex items-center px-6 py-3 bg-brand-red text-white rounded-lg hover:bg-red-700 transition-colors">
-                        Read Full Article
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-        </article>
-
-       
+        </aside>
     </div>
-
-    <!-- Sidebar - Made sticky on desktop -->
-    <aside class="lg:col-span-1 space-y-4 sm:space-y-6 lg:sticky lg:top-24">
-        <!-- Publisher Info -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="font-heading text-xl font-bold mb-4">About Publisher</h3>
-            <a href="{{ article.publisher.href }}" 
-               class="flex items-center space-x-3 hover:bg-gray-50 p-3 rounded-lg transition-colors">
-                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
-                    </svg>
-                </div>
-                <div>
-                    <h4 class="font-bold text-gray-900">{{ article.publisher.title }}</h4>
-                    <p class="text-sm text-gray-500">Visit Publisher</p>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </a>
-        </div>
-
-        <!-- Related Articles -->
-        {% if related %}
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="font-heading text-xl font-bold mb-6 flex items-center">
-                <i class="fas fa-newspaper text-brand-red mr-2"></i>
-                Related Articles
-            </h3>
-            <div class="space-y-6">
-                {% for related_article in related %}
-                <article class="group">
-                    <a href="/article/{{ related_article.url|replace('/', '_')|urlencode }}" 
-                       class="flex space-x-4">
-                        {% if related_article.image %}
-                        <div class="relative w-24 h-24 flex-shrink-0">
-                            <img src="{{ related_article.image }}" 
-                                 alt="{{ related_article.title }}"
-                                 class="w-full h-full object-cover rounded-lg">
-                            <div class="absolute inset-0 bg-black/10 group-hover:bg-black/0 rounded-lg transition-colors"></div>
-                        </div>
-                        {% endif %}
-                        <div class="flex-grow">
-                            <h4 class="font-bold text-gray-900 group-hover:text-brand-red transition-colors line-clamp-2 mb-2">
-                                {{ related_article.title }}
-                            </h4>
-                            <div class="flex items-center text-sm text-gray-500">
-                                <i class="far fa-clock mr-1"></i>
-                                <time>{{ related_article.published_date[:10] }}</time>
-                                <span class="mx-2">•</span>
-                                <span class="capitalize">{{ related_article.category }}</span>
-                            </div>
-                        </div>
-                    </a>
-                </article>
-                {% if not loop.last %}
-                <div class="border-b border-gray-100"></div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </aside>
 </div>
 {% endblock %}
