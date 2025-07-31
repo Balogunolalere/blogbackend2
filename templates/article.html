@@ -106,8 +106,13 @@
                 
                 <div class="p-6 lg:p-8">
                     <!-- Article Content -->
-                    <div class="prose max-w-none mb-8">
-                        <p class="text-lg leading-relaxed text-gray-600">{{ article.description }}</p>
+                        <div class="prose max-w-none mb-8">
+                            <p class="text-lg leading-relaxed text-gray-600">{{ article.description }}</p>
+                            {% if article.details %}
+                            <div class="text-base text-gray-700 mb-4 prose prose-slate">
+                                {{ article.details | safe }}
+                            </div>
+                            {% endif %}
                         <blockquote class="border-l-4 border-brand-red p-4 my-6 bg-rose-50">
                             <p class="italic text-gray-700">"{{ article.title }}"</p>
                             <footer class="text-sm text-gray-500 mt-2">- {{ article.publisher.title }}</footer>
